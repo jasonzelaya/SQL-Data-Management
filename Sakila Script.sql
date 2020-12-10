@@ -211,16 +211,95 @@ SELECT f1.film_id,
  WHERE name = 'Family';
 
 
--- 7e. Display the most frequently rented movies in descending order.
+/* Display the most frequently rented movies in descending order (7e) */
+SELECT f.film_id,
+	   /* Calculate the number of times each movie was rented */
+	   f.title, COUNT(r.inventory_id) AS rental_tally
+  FROM film AS f
+	   /* Combine all tables based on matching values in their related columns */
+	   INNER JOIN inventory AS i
+       ON f.film_id = i.film_id
+       INNER JOIN rental AS r
+       ON i.inventory_id = r.inventory_id
+ GROUP BY f.film_id
+ /* Order by most frequently rented to least frequently rented */
+ ORDER BY rental_tally DESC;
+       
 
--- 7f. Write a query to display how much business, in dollars, each store brought in.
+/* Display each store's total revenue in USD (7f) */
+SELECT s.store_id,
+	   SUM(p.amount) AS revenue_total
+  FROM store AS s
+	   /* Combine all tables based on matching values in their related columns */
+	   INNER JOIN inventory AS i
+       ON s.store_id = i.store_id
+       INNER JOIN rental AS r
+       ON i.inventory_id = r.inventory_id
+       INNER JOIN payment AS p
+       ON r.rental_id = p.rental_id
+ GROUP BY s.store_id;
 
--- 7g. Write a query to display for each store its store ID, city, and country.
 
--- 7h. List the top five genres in gross revenue in descending order.
+/* Display each store's ID, city, and country (7g) */
+SELECT s.store_id,
+	   c1.city, c2.country
+  FROM store AS s
+	   /* Combine all tables based on matching values in their related columns */
+	   INNER JOIN address as a
+       ON s.address_id = a.address_id
+       INNER JOIN city AS c1
+       ON a.city_id = c1.city_id
+       INNER JOIN country as c2
+       ON c1.country_id = c2.country_id;
 
--- 8a. In your new role as an executive, you would like to have an easy way of viewing the Top five genres by gross revenue. Use the solution from the problem above to create a view.
 
--- 8b. How would you display the view that you created in 8a?
+/* Top five genres by gross revenue in descending order (7h) */
+SELECT c.category_id,
+	   /* Calculate the revenue for each genre */
+	   c.name AS genre, SUM(p.amount) AS gross_rev_total
+  FROM category AS c
+	   /* Combine all tables based on matching values in their related columns */
+	   INNER JOIN film_category AS f
+       ON c.category_id = f.category_id
+       INNER JOIN inventory AS i
+       ON f.film_id = i.film_id
+       INNER JOIN rental AS r
+       ON i.inventory_id = r.inventory_id
+       INNER JOIN payment AS p
+       ON r.rental_id = p.rental_id
+ GROUP BY c.category_id
+ /* Order from highest gross revenue to lowest gross revenue */
+ ORDER BY gross_rev_total DESC
+ /* Display only the top 5 genres */
+ LIMIT 5;
 
--- 8c. You find that you no longer need the view top_five_genres. Write a query to delete it.
+
+/* Store the query to display the top 5 genres by gross revenue in descending order into a VIEW (8a) */
+CREATE OR REPLACE VIEW top_5_genres AS
+SELECT c.name AS genre, 
+	   /* Calculate the revenue for each genre */
+	   SUM(p.amount) AS gross_rev_total
+  FROM category AS c
+	   /* Combine all tables based on matching values in their related columns */
+	   INNER JOIN film_category AS f
+       ON c.category_id = f.category_id
+       INNER JOIN inventory AS i
+       ON f.film_id = i.film_id
+       INNER JOIN rental AS r
+       ON i.inventory_id = r.inventory_id
+       INNER JOIN payment AS p
+       ON r.rental_id = p.rental_id
+ GROUP BY c.category_id
+ /* Order from highest gross revenue to lowest gross revenue */
+ ORDER BY gross_rev_total DESC
+ /* Display only the top 5 genres */
+ LIMIT 5;
+
+
+/* Display the top_5_genres VIEW (8b) */
+SELECT *
+  FROM top_5_genres;
+
+
+/* Delete the top_5_genres VIEW (8c) */
+DROP VIEW IF EXISTS top_5_genres;
