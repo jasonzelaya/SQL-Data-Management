@@ -18,21 +18,21 @@ SELECT UPPER(CONCAT(first_name, ' ', last_name)) AS 'Actor Name'
 SELECT actor_id,
 	   first_name, last_name
   FROM actor
- /* Filter out all rows that do not have the value "Joe" in the first_name column */
+ /* Filter out all records that do not have the value "Joe" in the first_name column */
  WHERE first_name = 'Joe';
 
 
 /* Display all actors whose last names contain the letters "GEN" (2b) */
 SELECT *
   FROM actor
- /* Filter out rows that do not contain "GEN" in the last_name column */
+ /* Filter out records that do not contain "GEN" in the last_name column */
  WHERE last_name LIKE '%GEN%';
 
 
 /* Display all actors whose last names contain "LI" ordered by their last and first names, respectively (2c) */
 SELECT *
   FROM actor
- /* Filter out rows that do not contain "LI" in the last_name column */
+ /* Filter out records that do not contain "LI" in the last_name column */
  WHERE last_name LIKE '%LI%'
  ORDER BY last_name, first_name;
 
@@ -41,7 +41,7 @@ SELECT *
 SELECT country_id,
 	   country
   FROM country
- /* Filter out rows that do not have matching country column values */
+ /* Filter out records that do not have matching country column values */
  WHERE country IN ('Afghanistan', 'Bangladesh','China');
 
 
