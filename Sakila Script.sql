@@ -55,26 +55,98 @@ ALTER TABLE actor
 DROP COLUMN description;
 
 
--- 4a. List the last names of actors, as well as how many actors have that last name.
+/* Display the last names of actors and how many actors have that last name (4a) */
+SELECT last_name,
+		/* Calculate the number of actors with each last name */
+	   COUNT(last_name) AS last_name_tally
+  FROM actor
+ GROUP BY last_name;
+  
 
--- 4b. List last names of actors and the number of actors who have that last name, but only for names that are shared by at least two actors
+/* Display the last names of actors and how many actors have that last name for last names shared by at least two actors (4b) */
+SELECT last_name,
+	   COUNT(last_name) AS last_name_tally
+  FROM actor
+ GROUP BY last_name
+ HAVING COUNT(last_name) >= 2;
 
--- 4c. The actor HARPO WILLIAMS was accidentally entered in the actor table as GROUCHO WILLIAMS. Write a query to fix the record.
 
--- 4d. Perhaps we were too hasty in changing GROUCHO to HARPO. It turns out that GROUCHO was the correct name after all! In a single query, if the first name of the actor is currently HARPO, change it to GROUCHO.
+/* Fix the record that contains incorrect data by changing 'HARPO WILLIAMS' to 'GROUCHO WILLIAMS' (4c) */
+UPDATE actor
+   SET first_name = 'HARPO'
+ WHERE first_name = 'GROUCHO'
+   AND last_name = 'WILLIAMS';
 
 
--- 5a. You cannot locate the schema of the address table. Which query would you use to re-create it?
+/* Correct the misunderstanding of the query above by changing "HARPO WILLIAMS" back to "GROUCHO WILLIAMS" (4d) */
+UPDATE actor
+SET first_name = 'GROUCHO'
+WHERE first_name = 'HARPO'
+  /* Affect only the record the previous query changed */
+  AND actor_id = 172;
 
--- 6a. Use JOIN to display the first and last names, as well as the address, of each staff member.
 
--- 6b. Use JOIN to display the total amount rung up by each staff member in August of 2005.
+/* Display the query used to create the address table (5a) */ 
+SHOW CREATE TABLE address;
 
--- 6c. List each film and the number of actors who are listed for that film using inner join.
 
--- 6d. How many copies of the film Hunchback Impossible exist in the inventory system?
+/* Display each staff member's first name, last name, and address (6a) */ 
+SELECT s.first_name,
+	   s.last_name, a.address
+  FROM staff AS s
+	   /* Combine the tables based on the matching values in their related column */
+	   INNER JOIN address AS a
+       ON s.address_id = a.address_id;
 
--- 6e. Using the tables payment and customer and the JOIN command, list the total paid by each customer. List the customers alphabetically by last name:
+
+/* Display the total amount rung up by each staff member in August of 2005 (6b) */
+SELECT s.staff_id,
+	   /* Calculate the amount rung up and create a column to specify the time range this applies to */
+	   s.first_name, s.last_name, SUM(p.amount) AS amount_rung_up_total, CONCAT(MONTHNAME(p.payment_date), ', ', YEAR(p.payment_date)) AS time_frame 
+  FROM staff AS s
+	   /* Combine the tables based on the matching values in their related column */
+	   INNER JOIN payment AS p
+       ON s.staff_id = p.staff_id
+ /* Filter out all records that do not have payment dates during August of 2005*/
+ WHERE MONTH(p.payment_date) = 08
+   AND YEAR(p.payment_date) = 2005
+ GROUP BY s.staff_id;
+
+
+/* List each film and the number of actors who are listed for that film (6c) */
+SELECT f1.title,
+	   /* Calculate the number of actors listed for each film */
+	   COUNT(f2.actor_id) AS film_actors_tally
+  FROM film AS f1
+	   /* Combine the tables based on the matching values of their related column */
+	   INNER JOIN film_actor AS f2
+       ON f1.film_id = f2.film_id
+ GROUP BY f1.title;
+
+
+/* Display how many copies of "Hunchback Impossible" are in the inventory system (6d) */
+SELECT f.title,
+	   /* Calculate the number of film copies */
+	   COUNT(i.film_id) AS film_copies_tally
+  FROM film AS f
+	   /* Combine the tables based on the matching values in their related column */
+	   INNER JOIN inventory AS i
+       ON f.film_id = i.film_id
+ /* Filter out all films except "Hunchback Impossible" */ 
+ WHERE f.title = 'Hunchback Impossible';
+
+
+/* Display total paid by each customer listed alphabetically by last name (6e) */
+SELECT c.customer_id,
+	   c.first_name, c.last_name, SUM(p.amount) AS amount_paid_total
+  FROM customer AS c
+	   /* Combine tables based on matching values in their related column */
+	   INNER JOIN payment AS p
+       ON c.customer_id = p.customer_id
+ GROUP BY c.customer_id
+ /* List alphabetically by last name */
+ ORDER BY c.last_name;
+
 
 -- 7a. The music of Queen and Kris Kristofferson have seen an unlikely resurgence. As an unintended consequence, films starting with the letters K and Q have also soared in popularity. Use subqueries to display the titles of movies starting with the letters K and Q whose language is English.
 
