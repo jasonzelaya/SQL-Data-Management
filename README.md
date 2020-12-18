@@ -1,6 +1,6 @@
 # SQL Data Management
 
-#### -- Project Status: Active
+#### -- Project Status: Completed
 
 ### Technologies
 * SQL
